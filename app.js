@@ -1,9 +1,7 @@
 //jshint esversion:6
 "use strict";
 
-import * as dotenv from "dotenv";
-dotenv.config();
-
+import md5 from "md5";
 import mongoose from "mongoose";
 import encrypt from "mongoose-encryption";
 import express from "express";
@@ -24,12 +22,6 @@ const userSchema = new mongoose.Schema({
   email: String,
   password: String,
 });
-// const secretKey = "thisismysecretkey";
-userSchema.plugin(encrypt, {
-  secret: process.env.SECRET,
-  encryptedFields: ["password"],
-});
-
 const User = mongoose.model("User", userSchema);
 
 // GET Methods
@@ -48,7 +40,7 @@ app.post("/register", async (req, res) => {
   const { username, password } = req.body;
   const newUser = new User({
     email: username,
-    password: password,
+    password: md5(password),
   });
   try {
     await newUser.save();
@@ -67,7 +59,7 @@ app.post("/login", async (req, res) => {
       email: username,
     });
     if (!user) throw new Error(erroMsg);
-    if (user.password === password) res.render("secrets");
+    if (user.password === md5(password)) res.render("secrets");
     else throw new Error(erroMsg);
   } catch (error) {
     console.log(error.message);
