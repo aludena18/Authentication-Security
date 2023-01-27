@@ -1,6 +1,9 @@
 //jshint esversion:6
 "use strict";
 
+import * as dotenv from "dotenv";
+dotenv.config();
+
 import mongoose from "mongoose";
 import encrypt from "mongoose-encryption";
 import express from "express";
@@ -21,9 +24,9 @@ const userSchema = new mongoose.Schema({
   email: String,
   password: String,
 });
-const secretKey = "thisismysecretkey";
+// const secretKey = "thisismysecretkey";
 userSchema.plugin(encrypt, {
-  secret: secretKey,
+  secret: process.env.SECRET,
   encryptedFields: ["password"],
 });
 
