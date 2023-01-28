@@ -1,11 +1,12 @@
 //jshint esversion:6
 "use strict";
 
-import md5 from "md5";
 import mongoose from "mongoose";
 import encrypt from "mongoose-encryption";
 import express from "express";
 import _ from "lodash";
+import bcrypt from "bcryptjs";
+const salt = bcrypt.genSaltSync(10);
 
 const MONGO_URL = "mongodb://127.0.0.1:27017";
 const DATABASE_NAME = "userDB";
@@ -40,7 +41,7 @@ app.post("/register", async (req, res) => {
   const { username, password } = req.body;
   const newUser = new User({
     email: username,
-    password: md5(password),
+    password: bcrypt.hashSync(password, salt),
   });
   try {
     await newUser.save();
@@ -59,8 +60,9 @@ app.post("/login", async (req, res) => {
       email: username,
     });
     if (!user) throw new Error(erroMsg);
-    if (user.password === md5(password)) res.render("secrets");
-    else throw new Error(erroMsg);
+    bcrypt.compare(password, user.password, function (err, result) {
+      if (result) res.render("secrets");
+    });
   } catch (error) {
     console.log(error.message);
   }
